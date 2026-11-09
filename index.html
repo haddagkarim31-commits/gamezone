@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <meta name="description" content="GameZone : des mini-jeux gratuits sur ton téléphone.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <title>GameZone — Mini-jeux gratuits</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b1020;--panel:#151d32;--panel2:#202b45;--accent:#7c5cff;--txt:#f5f6ff;--muted:#aab3ca}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#111a32,#090d18 65%);font-family:system-ui,Arial,sans-serif;color:var(--txt);min-height:100vh}
+    header{padding:24px 18px 18px;max-width:850px;margin:auto}h1{font-size:30px;margin:0}header p{color:var(--muted);margin:6px 0 0}
+    main{max-width:850px;margin:auto;padding:0 16px 40px}.hero{background:linear-gradient(120deg,#6547ed,#1d9acb);padding:20px;border-radius:20px;margin-bottom:18px}
+    .hero h2{margin:0 0 6px}.hero p{margin:0;color:#f0edff}.toolbar{display:flex;gap:8px;overflow:auto;padding:4px 0 14px}
+    button,.chip{border:0;border-radius:12px;padding:11px 14px;background:var(--panel2);color:var(--txt);font-weight:650;cursor:pointer}
+    button.primary{background:var(--accent)}.chip.active{background:#6547ed}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .game{background:var(--panel);border:1px solid #293451;border-radius:18px;padding:14px;min-height:145px;display:flex;flex-direction:column;justify-content:space-between}
+    .emoji{font-size:32px}.game h3{margin:8px 0 3px}.game p{margin:0;color:var(--muted);font-size:13px}
+    .game button{margin-top:12px;width:100%;background:#2d3b5d}.game button:hover{background:var(--accent)}
+    .screen{display:none;background:var(--panel);padding:18px;border-radius:18px;margin-top:14px}.screen.show{display:block}
+    .screen h2{margin-top:0}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.back{background:#34415f;margin-bottom:12px}
+    .board{display:grid;gap:7px;max-width:330px;margin:15px auto}.memory{grid-template-columns:repeat(4,1fr)}.memory button{aspect-ratio:1;font-size:25px;padding:0}
+    .ttt{grid-template-columns:repeat(3,1fr);max-width:270px}.ttt button{aspect-ratio:1;font-size:34px;padding:0}
+    canvas{display:block;max-width:100%;background:#080d18;border:1px solid #394664;border-radius:12px;margin:12px auto;touch-action:manipulation}
+    .hint{color:var(--muted);font-size:13px}.notice{border:1px dashed #53617f;border-radius:14px;padding:12px;color:var(--muted);margin-top:18px;font-size:13px}
+    footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+    @media(min-width:600px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}header h1{font-size:36px}}
+  </style>
+</head>
+<body>
+<header><h1>🎮 GameZone</h1><p>Des mini-jeux gratuits, directement sur ton téléphone.</p></header>
+<main>
+  <section class="hero"><h2>Bienvenue dans l'arène !</h2><p>Choisis un jeu et amuse-toi. De nouveaux jeux arriveront bientôt.</p></section>
+  <div class="toolbar" id="filters">
+    <button class="chip active" data-cat="Tous">Tous</button><button class="chip" data-cat="Réflexion">Réflexion</button><button class="chip" data-cat="Classique">Classique</button><button class="chip" data-cat="Arcade">Arcade</button>
+  </div>
+  <section class="grid" id="games">
+    <article class="game" data-cat="Réflexion"><div><div class="emoji">🧠</div><h3>Memory</h3><p>Retrouve les paires identiques.</p></div><button onclick="openGame('memory')">Jouer</button></article>
+    <article class="game" data-cat="Classique"><div><div class="emoji">⭕</div><h3>Morpion</h3><p>Aligne trois symboles pour gagner.</p></div><button onclick="openGame('ttt')">Jouer</button></article>
+    <article class="game" data-cat="Arcade"><div><div class="emoji">🐍</div><h3>Snake</h3><p>Mange les pommes sans te cogner.</p></div><button onclick="openGame('snake')">Jouer</button></article>
+  </section>
+  <section class="screen" id="memory"><button class="back" onclick="closeGames()">← Retour</button><h2>🧠 Memory</h2><p class="hint">Trouve les 6 paires.</p><div class="board memory" id="memoryBoard"></div><p id="memoryStatus" class="hint"></p><button onclick="startMemory()">Recommencer</button></section>
+  <section class="screen" id="ttt"><button class="back" onclick="closeGames()">← Retour</button><h2>⭕ Morpion</h2><p id="tttStatus" class="hint">À X de jouer.</p><div class="board ttt" id="tttBoard"></div><button onclick="startTtt()">Recommencer</button></section>
+  <section class="screen" id="snake"><button class="back" onclick="closeGames()">← Retour</button><h2>🐍 Snake</h2><p class="hint">Utilise les flèches. Sur téléphone, touche les boutons.</p><canvas id="snakeCanvas" width="300" height="300"></canvas><div class="row" style="justify-content:center"><button onclick="turn(0,-1)">↑</button></div><div class="row" style="justify-content:center"><button onclick="turn(-1,0)">←</button><button onclick="turn(0,1)">↓</button><button onclick="turn(1,0)">→</button></div><p id="snakeStatus" class="hint"></p><button onclick="startSnake()">Recommencer</button></section>
+  <div class="notice">Version de départ gratuite. Aucun paiement ni compte joueur n'est demandé. Les publicités ne sont pas encore activées : elles seront ajoutées seulement après la mise en ligne et l'acceptation par une régie publicitaire.</div>
+</main>
+<footer>GameZone • Projet indépendant • 2026</footer>
+<script>
+const screens=['memory','ttt','snake'];
+function openGame(id){document.getElementById('games').style.display='none';document.getElementById('filters').style.display='none';screens.forEach(s=>document.getElementById(s).classList.toggle('show',s===id));if(id==='memory')startMemory();if(id==='ttt')startTtt();if(id==='snake')startSnake();window.scrollTo(0,0)}
+function closeGames(){screens.forEach(s=>document.getElementById(s).classList.remove('show'));document.getElementById('games').style.display='grid';document.getElementById('filters').style.display='flex';stopSnake()}
+document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.game').forEach(g=>g.style.display=(b.dataset.cat==='Tous'||g.dataset.cat===b.dataset.cat)?'flex':'none')}));
+function startMemory(){let vals=['🍎','🍋','🍇','🍉','⭐','🚗','🍎','🍋','🍇','🍉','⭐','🚗'].sort(()=>Math.random()-.5),opened=[],done=0;const board=document.getElementById('memoryBoard');board.innerHTML='';document.getElementById('memoryStatus').textContent='Paires trouvées : 0 / 6';vals.forEach((v,i)=>{let b=document.createElement('button');b.textContent='?';b.onclick=()=>{if(opened.length===2||b.dataset.done)return;b.textContent=v;opened.push({b,v});if(opened.length===2){if(opened[0].v===opened[1].v){opened.forEach(x=>x.b.dataset.done='1');done++;document.getElementById('memoryStatus').textContent=`Paires trouvées : ${done} / 6`;opened=[]}else{let pair=opened;setTimeout(()=>{pair.forEach(x=>x.b.textContent='?');opened=[]},650)}}};board.appendChild(b)})}
+let cells,turnPlayer,ended;
+function startTtt(){cells=Array(9).fill('');turnPlayer='X';ended=false;document.getElementById('tttStatus').textContent='À X de jouer.';let board=document.getElementById('tttBoard');board.innerHTML='';cells.forEach((_,i)=>{let b=document.createElement('button');b.onclick=()=>{if(ended||cells[i])return;cells[i]=turnPlayer;b.textContent=turnPlayer;if([ [0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6] ].some(line=>line.every(n=>cells[n]===turnPlayer))){ended=true;document.getElementById('tttStatus').textContent=turnPlayer+' a gagné !'}else if(cells.every(Boolean)){ended=true;document.getElementById('tttStatus').textContent='Match nul !'}else{turnPlayer=turnPlayer==='X'?'O':'X';document.getElementById('tttStatus').textContent='À '+turnPlayer+' de jouer.'}};board.appendChild(b)})}
+let snakeTimer=null,snake,dir,food,score;
+const canvas=document.getElementById('snakeCanvas'),ctx=canvas.getContext('2d');
+function stopSnake(){if(snakeTimer)clearInterval(snakeTimer);snakeTimer=null}
+function startSnake(){stopSnake();snake=[{x:7,y:7},{x:6,y:7},{x:5,y:7}];dir={x:1,y:0};score=0;food={x:12,y:8};document.getElementById('snakeStatus').textContent='Score : 0';drawSnake();snakeTimer=setInterval(stepSnake,150)}
+function turn(x,y){if(!snake|| (x===-dir.x&&y===-dir.y))return;dir={x,y}}
+function stepSnake(){let h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};if(h.x<0||h.y<0||h.x>=15||h.y>=15||snake.some(p=>p.x===h.x&&p.y===h.y)){stopSnake();document.getElementById('snakeStatus').textContent='Partie terminée ! Score : '+score;return}snake.unshift(h);if(h.x===food.x&&h.y===food.y){score++;food={x:Math.floor(Math.random()*15),y:Math.floor(Math.random()*15)};document.getElementById('snakeStatus').textContent='Score : '+score}else snake.pop();drawSnake()}
+function drawSnake(){ctx.fillStyle='#080d18';ctx.fillRect(0,0,300,300);ctx.fillStyle='#7c5cff';snake.forEach(p=>ctx.fillRect(p.x*20+1,p.y*20+1,18,18));ctx.fillStyle='#ffb84d';ctx.fillRect(food.x*20+2,food.y*20+2,16,16)}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowUp')turn(0,-1);if(e.key==='ArrowDown')turn(0,1);if(e.key==='ArrowLeft')turn(-1,0);if(e.key==='ArrowRight')turn(1,0)});
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+</script>
+</body></html>
